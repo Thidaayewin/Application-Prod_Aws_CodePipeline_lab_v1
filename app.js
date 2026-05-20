@@ -1,5 +1,4 @@
-var port = process.env.PORT || 3000,
-    http = require('http'),
+var http = require('http'),
     fs = require('fs'),
     html = fs.readFileSync('index.html');
 
@@ -7,7 +6,7 @@ var log = function(entry) {
     fs.appendFileSync('/tmp/sample-app.log', new Date().toISOString() + ' - ' + entry + '\n');
 };
 
-var server = http.createServer(function (req, res) {
+var handleRequest = function(req, res) {
     if (req.method === 'POST') {
         var body = '';
 
@@ -18,7 +17,7 @@ var server = http.createServer(function (req, res) {
         req.on('end', function() {
             if (req.url === '/') {
                 log('Received message: ' + body);
-            } else if (req.url = '/scheduled') {
+            } else if (req.url === '/scheduled') {
                 log('Received task ' + req.headers['x-aws-sqsd-taskname'] + ' scheduled at ' + req.headers['x-aws-sqsd-scheduled-at']);
             }
 
@@ -30,10 +29,24 @@ var server = http.createServer(function (req, res) {
         res.write(html);
         res.end();
     }
-});
+};
 
-// Listen on port 3000, IP defaults to 127.0.0.1
-server.listen(port);
+var createServer = function() {
+    return http.createServer(handleRequest);
+};
 
-// Put a friendly message on the terminal
-console.log('Server running at http://127.0.0.1:' + port + '/');
+if (require.main === module) {
+    var port = process.env.PORT || 3000,
+        server = createServer();
+
+    // Listen on port 3000, IP defaults to 127.0.0.1
+    server.listen(port);
+
+    // Put a friendly message on the terminal
+    console.log('Server running at http://127.0.0.1:' + port + '/');
+}
+
+module.exports = {
+    createServer: createServer,
+    handleRequest: handleRequest
+};
