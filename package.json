@@ -4,7 +4,7 @@
   "private": true,
   "dependencies": {},
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
     "test": "node --test"
   }
 }
